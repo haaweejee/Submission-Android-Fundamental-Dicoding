@@ -7,11 +7,15 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import id.haaweejee.githubuserv2.adapter.UserListAdapter
 import id.haaweejee.githubuserv2.databinding.ActivityMainBinding
 import id.haaweejee.githubuserv2.model.User
+import org.json.JSONObject
+import java.io.IOException
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var binding : ActivityMainBinding
-    private lateinit var adapterList : UserListAdapter
+    private lateinit var binding: ActivityMainBinding
+    private lateinit var adapterList: UserListAdapter
+    private var listUser: ArrayList<User> = arrayListOf()
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -19,6 +23,8 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         adapterList = UserListAdapter()
+        readJson()
+
         binding.apply {
             rvList.layoutManager = LinearLayoutManager(this@MainActivity)
             rvList.adapter = adapterList
@@ -27,26 +33,54 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private val listUser : ArrayList<User> get(){
-        val dataUsername = resources.getStringArray(R.array.username)
-        val dataName = resources.getStringArray(R.array.name)
-        val dataAvatar = resources.obtainTypedArray(R.array.avatar)
+    private fun readJson() {
+        val json: String?
+        try {
+            json = assets.open("githubuser.json").bufferedReader().use { it.readText() }
 
-        //TODO : IF you want add more data you can add the data
+            val objectUser = JSONObject(json)
+            val users = objectUser.getJSONArray("users")
 
-        val list = ArrayList<User>()
+            for (i in 0 until users.length()) {
+                with(users.getJSONObject(i)) {
+                    listUser.add(
+                        User(
+                            name = getString("name"),
+                            username = getString("username"),
+                            avatar = resources.getIdentifier(
+                                getString("avatar"),
+                                null,
+                                packageName
+                            ),
+                        )
+                    )
+                }
+            }
 
-        for(i in dataName.indices){
-            val user = User(
-                name = dataName[i],
-                username = dataUsername[i],
-                avatar = dataAvatar.getResourceId(i, -1)
-            )
-            list.add(user)
+        } catch (e: IOException) {
+            e.printStackTrace()
         }
 
-        return list
+//    private val listUser : ArrayList<User> get(){
+//        val dataUsername = resources.getStringArray(R.array.username)
+//        val dataName = resources.getStringArray(R.array.name)
+//        val dataAvatar = resources.obtainTypedArray(R.array.avatar)
+//
+//        //TODO : IF you want add more data you can add the data
+//
+//        val list = ArrayList<User>()
+//
+//        for(i in dataName.indices){
+//            val user = User(
+//                name = dataName[i],
+//                username = dataUsername[i],
+//                avatar = dataAvatar.getResourceId(i, -1)
+//            )
+//            list.add(user)
+//        }
+//
+//        return list
+//    }
+
     }
-
-
 }
