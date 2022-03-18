@@ -5,6 +5,8 @@
       <map>
         <entry key="..\:/Project/Android/GithubUserV22/app/src/main/res/layout/activity_detail.xml" value="0.1956521739130435" />
         <entry key="..\:/Project/Android/GithubUserV22/app/src/main/res/layout/activity_main.xml" value="0.1" />
+        <entry key="..\:/Project/Android/GithubUserV22/app/src/main/res/layout/fragment_follower.xml" value="0.26875" />
+        <entry key="..\:/Project/Android/GithubUserV22/app/src/main/res/layout/fragment_following.xml" value="0.26875" />
         <entry key="..\:/Project/Android/GithubUserV22/app/src/main/res/layout/item_card_layout.xml" value="0.1" />
       </map>
     </option>
