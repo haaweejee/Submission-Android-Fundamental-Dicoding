@@ -1,8 +1,12 @@
 package id.haaweejee.githubuserv2
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.View
 import android.widget.RadioGroup
+import android.widget.SearchView
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import id.haaweejee.githubuserv2.adapter.UserListAdapter
 import id.haaweejee.githubuserv2.databinding.ActivityMainBinding
@@ -14,8 +18,11 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var adapterList: UserListAdapter
-    private var listUser: ArrayList<User> = arrayListOf()
+    private lateinit var viewModel : UserViewModel
 
+    override fun onDestroy() {
+        super.onDestroy()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -23,64 +30,64 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         adapterList = UserListAdapter()
-        readJson()
+        adapterList.setOnItemClick(object : UserListAdapter.OnItemClickCallback{
+            override fun onItemClicked(data: User) {
+                Intent(this@MainActivity, DetailActivity::class.java).also {
+                    it.putExtra(DetailActivity.EXTRA_USERNAME, data.login)
+                    startActivity(it)
+                }
+            }
+        })
+        viewModel = ViewModelProvider(this, ViewModelProvider.NewInstanceFactory()).get(
+            UserViewModel::class.java
+        )
 
         binding.apply {
             rvList.layoutManager = LinearLayoutManager(this@MainActivity)
             rvList.adapter = adapterList
             rvList.setHasFixedSize(true)
-            adapterList.setData(listUser)
-        }
-    }
 
-    private fun readJson() {
-        val json: String?
-        try {
-            json = assets.open("githubuser.json").bufferedReader().use { it.readText() }
+            searchView.setOnQueryTextListener(object :
+                androidx.appcompat.widget.SearchView.OnQueryTextListener {
+                override fun onQueryTextSubmit(query: String?): Boolean {
+                    if (query != null && query.isNotEmpty()) {
+                        searchUser()
+                    }
+                    return true
+                }
 
-            val objectUser = JSONObject(json)
-            val users = objectUser.getJSONArray("users")
+                override fun onQueryTextChange(newText: String?): Boolean {
+                    return false
+                }
+            })
 
-            for (i in 0 until users.length()) {
-                with(users.getJSONObject(i)) {
-                    listUser.add(
-                        User(
-                            name = getString("name"),
-                            username = getString("username"),
-                            avatar = resources.getIdentifier(
-                                getString("avatar"),
-                                null,
-                                packageName
-                            ),
-                        )
-                    )
+            viewModel.getSearchUser().observe(this@MainActivity) {
+                if (it != null) {
+                    showLoading(false)
+                    adapterList.setData(it)
+                    binding.rvList.visibility = View.VISIBLE
                 }
             }
-
-        } catch (e: IOException) {
-            e.printStackTrace()
         }
-
-//    private val listUser : ArrayList<User> get(){
-//        val dataUsername = resources.getStringArray(R.array.username)
-//        val dataName = resources.getStringArray(R.array.name)
-//        val dataAvatar = resources.obtainTypedArray(R.array.avatar)
-//
-//        //TODO : IF you want add more data you can add the data
-//
-//        val list = ArrayList<User>()
-//
-//        for(i in dataName.indices){
-//            val user = User(
-//                name = dataName[i],
-//                username = dataUsername[i],
-//                avatar = dataAvatar.getResourceId(i, -1)
-//            )
-//            list.add(user)
-//        }
-//
-//        return list
-//    }
-
     }
+
+    private fun searchUser(){
+        binding.apply {
+            val query = searchView.query.toString()
+            if (query.isEmpty()) return
+            binding.rvList.visibility = View.GONE
+            showLoading(true)
+            viewModel.setSearchUser(query)
+
+        }
+    }
+
+    private fun showLoading(state: Boolean) {
+        if (state) {
+            binding.progressCircular.visibility = View.VISIBLE
+        } else {
+            binding.progressCircular.visibility = View.GONE
+        }
+    }
+
 }
