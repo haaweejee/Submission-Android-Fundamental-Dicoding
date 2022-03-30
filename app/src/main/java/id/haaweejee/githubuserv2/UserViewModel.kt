@@ -1,16 +1,14 @@
 package id.haaweejee.githubuserv2
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import id.haaweejee.githubuserv2.api.RetrofitClient
 import id.haaweejee.githubuserv2.model.DetailUsers
 import id.haaweejee.githubuserv2.model.User
-import id.haaweejee.githubuserv2.model.UsersResponse
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class UserViewModel : ViewModel() {
     companion object{
@@ -18,94 +16,54 @@ class UserViewModel : ViewModel() {
         const val FAIL = "Failure"
     }
 
-    val listUsers = MutableLiveData<List<User>>()
-    val followingUsers = MutableLiveData<List<User>>()
-    val followersUser = MutableLiveData<List<User>>()
-    val detailUsers = MutableLiveData<DetailUsers>()
+    private val _listUsers = MutableLiveData<List<User>>()
+    val listUsers : LiveData<List<User>> = _listUsers
+
+    private val _detailUsers = MutableLiveData<DetailUsers>()
+    val detailUsers : LiveData<DetailUsers> = _detailUsers
+
+    private val _followingUsers = MutableLiveData<List<User>>()
+    val followingUsers : LiveData<List<User>> = _followingUsers
+
+    private val _followersUser = MutableLiveData<List<User>>()
+    val followersUser : LiveData<List<User>> = _followersUser
 
 
-    fun setSearchUser(query: String){
-        RetrofitClient.apiInstance
-            .getSearchUser(query)
-            .enqueue(object : Callback<UsersResponse> {
-                override fun onResponse(
-                    call: Call<UsersResponse>,
-                    response: Response<UsersResponse>
-                ) {
-                    if (response.isSuccessful){
-                        listUsers.postValue(response.body()?.items)
-                        Log.d(RESPONSE, response.code().toString())
-                    }
-                }
-
-                override fun onFailure(call: Call<UsersResponse>, t: Throwable) {
-                    t.message?.let { Log.d(FAIL, it) }
-                }
-            })
-    }
-
-    fun getSearchUser(): LiveData<List<User>> {
-        return listUsers
-    }
-
-    fun setDetailUser(username: String){
-        RetrofitClient.apiInstance
-            .getDetailUser(username)
-            .enqueue(object : Callback<DetailUsers> {
-                override fun onResponse(call: Call<DetailUsers>, response: Response<DetailUsers>) {
-                    if (response.isSuccessful){
-                        detailUsers.postValue(response.body())
-                    }
-                }
-
-                override fun onFailure(call: Call<DetailUsers>, t: Throwable) {
-                    t.message?.let { Log.d(FAIL, it) }
-                }
-            })
-    }
-
-    fun getUserDetail(): LiveData<DetailUsers> {
-        return detailUsers
+    fun getSearchUser(query: String){
+        viewModelScope.launch(Dispatchers.IO){
+            val client = RetrofitClient.apiInstance.getSearchUser(query)
+            if (client.isSuccessful){
+                _listUsers.postValue(client.body()?.items)
+            }
+        }
 
     }
 
-
-    fun setDetailFollowing(username: String){
-        RetrofitClient.apiInstance
-            .getFollowingUser(username)
-            .enqueue(object : Callback<List<User>>{
-                override fun onResponse(call: Call<List<User>>, response: Response<List<User>>) {
-                    followingUsers.postValue(response.body())
-                    Log.d(RESPONSE, response.code().toString())
-                }
-
-                override fun onFailure(call: Call<List<User>>, t: Throwable) {
-                    t.message?.let { Log.d(FAIL, it) }
-                }
-            })
+    fun getDetailUser(username: String){
+        viewModelScope.launch(Dispatchers.IO){
+            val client = RetrofitClient.apiInstance.getDetailUser(username)
+            if (client.isSuccessful){
+                _detailUsers.postValue(client.body())
+            }
+        }
     }
 
-    fun getDetailFollowing() : LiveData<List<User>>{
-        return followingUsers
+    fun getDetailFollowing(username: String) {
+        viewModelScope.launch(Dispatchers.IO){
+            val client = RetrofitClient.apiInstance.getFollowingUser(username)
+            if (client.isSuccessful){
+                _followingUsers.postValue(client.body())
+            }
+        }
     }
 
-    fun setDetailFollower(username: String){
-        RetrofitClient.apiInstance
-            .getFollowersUser(username)
-            .enqueue(object : Callback<List<User>>{
-                override fun onResponse(call: Call<List<User>>, response: Response<List<User>>) {
-                    followersUser.postValue(response.body())
-                    Log.d(RESPONSE, response.code().toString())
-                }
-
-                override fun onFailure(call: Call<List<User>>, t: Throwable) {
-                    t.message?.let { Log.d(FAIL, it) }
-                }
-            })
-    }
-
-    fun getDetailFollower() : LiveData<List<User>>{
-        return followersUser
+    fun getDetailFollowers(username: String){
+        viewModelScope.launch(Dispatchers.IO){
+            val client = RetrofitClient.apiInstance.getFollowersUser(username)
+            if (client.isSuccessful){
+                _followersUser.postValue(client.body())
+            }
+        }
     }
 
 }
