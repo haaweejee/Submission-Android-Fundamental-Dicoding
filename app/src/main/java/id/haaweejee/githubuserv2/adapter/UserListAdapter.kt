@@ -25,7 +25,7 @@ class UserListAdapter : RecyclerView.Adapter<UserListAdapter.ListViewHolder>() {
         listUser.clear()
         listUser.addAll(user)
         notifyDataSetChanged()
-        Log.d("TAG", "cek $listUser")
+        Log.d("TAG", "cek item masuk $listUser")
     }
 
     inner class ListViewHolder(private val binding: ItemCardLayoutBinding) : RecyclerView.ViewHolder(binding.root) {

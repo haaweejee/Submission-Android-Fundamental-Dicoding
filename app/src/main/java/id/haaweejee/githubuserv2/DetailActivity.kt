@@ -34,12 +34,12 @@ class DetailActivity : AppCompatActivity() {
 
         val username = intent.getStringExtra(EXTRA_USERNAME)
 
-        viewModel = ViewModelProvider(this).get(UserViewModel::class.java)
+        viewModel = ViewModelProvider(this)[UserViewModel::class.java]
 
-        username?.let { viewModel.setDetailUser(it) }
+        username?.let { viewModel.getDetailUser(it) }
         showTabLayout()
 
-        viewModel.getUserDetail().observe(this){
+        viewModel.detailUsers.observe(this){
             binding.tvUsername.text = it.login
             binding.tvName.text = it.name
             Glide.with(this)

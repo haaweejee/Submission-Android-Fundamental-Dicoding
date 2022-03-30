@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.RadioGroup
 import android.widget.SearchView
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import id.haaweejee.githubuserv2.adapter.UserListAdapter
@@ -20,14 +21,13 @@ class MainActivity : AppCompatActivity() {
     private lateinit var adapterList: UserListAdapter
     private lateinit var viewModel : UserViewModel
 
-    override fun onDestroy() {
-        super.onDestroy()
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
 
         adapterList = UserListAdapter()
         adapterList.setOnItemClick(object : UserListAdapter.OnItemClickCallback{
@@ -61,7 +61,7 @@ class MainActivity : AppCompatActivity() {
                 }
             })
 
-            viewModel.getSearchUser().observe(this@MainActivity) {
+            viewModel.listUsers.observe(this@MainActivity) {
                 if (it != null) {
                     showLoading(false)
                     adapterList.setData(it)
@@ -77,7 +77,7 @@ class MainActivity : AppCompatActivity() {
             if (query.isEmpty()) return
             binding.rvList.visibility = View.GONE
             showLoading(true)
-            viewModel.setSearchUser(query)
+            viewModel.getSearchUser(query)
 
         }
     }

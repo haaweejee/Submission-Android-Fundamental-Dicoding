@@ -43,8 +43,8 @@ class FollowingFragment : Fragment(R.layout.fragment_following) {
 
         showLoading(true)
         userViewModel = ViewModelProvider(this).get(UserViewModel::class.java)
-        userViewModel.setDetailFollowing(username)
-        userViewModel.getDetailFollowing().observe(viewLifecycleOwner) {
+        userViewModel.getDetailFollowing(username)
+        userViewModel.followingUsers.observe(viewLifecycleOwner) {
             if (it != null) {
                 showLoading(false)
                 Log.d("TAG", "cek api $it")
